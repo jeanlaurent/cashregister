@@ -1,37 +1,33 @@
-import com.google.common.base.Splitter;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.AtomicLongMap;
 
 import java.util.Scanner;
 
-import static com.google.common.base.Splitter.*;
+import static com.google.common.base.Splitter.on;
 
 public class CashRegister {
-    public static final int APPLE_PRICE = 100;
-    public static final int BANANA_PRICE = 150;
-    public static final int CHERRY_PRICE = 75;
-    public int money;
-    private int numberOfApples;
-    private int numberOfCherry;
-    private int numberOfBanana;
-    private int numberOfPommes;
-    private int numberOfMeles;
+    public static final int TRESHOLD_FOR_PRODUCT_DISCOUNT = 5;
+    public static final int POMMEFAMILY_DISCOUNT = 100;
+    public static final int PRODUCT_DISCOUNT = 200;
+    public long money;
+    private final AtomicLongMap<FRUIT> fruitCounter;
 
     public CashRegister() {
         this.money = 0;
-        this.numberOfApples = 0;
-        this.numberOfCherry = 0;
-        this.numberOfBanana = 0;
-        this.numberOfMeles = 0;
-        this.numberOfPommes = 0;
+        fruitCounter = AtomicLongMap.create();
+        for (FRUIT fruit : FRUIT.values()) {
+            fruitCounter.put(fruit, 0);
+        }
     }
 
     public void listenForInput() {
         Scanner scanner = new Scanner(System.in);
-        System.out.print(">");
+        System.out.print("> ");
         while (scanner.hasNextLine()) {
             String input = scanner.nextLine();
             register(input);
             System.out.println(String.valueOf(this.money));
-            System.out.print(">");
+            System.out.print("> ");
         }
     }
 
@@ -40,52 +36,37 @@ public class CashRegister {
     }
 
     public void registerOne(String input) {
-        if (input.toLowerCase().contains("apple")) {
-            this.numberOfApples++;
-            this.money += APPLE_PRICE;
+        FRUIT fruit = FRUIT.valueOf(input.trim().toUpperCase());
+
+        this.money += fruit.priceWithEventualDiscount(fruitCounter.incrementAndGet(fruit));
+
+        if (isElligibleForPommeFamilyDiscount(fruit)) {
+            this.money -= POMMEFAMILY_DISCOUNT;
         }
-        if (input.toLowerCase().contains("mele")) {
-            this.numberOfMeles++;
-            this.money += APPLE_PRICE;
-            if (numberOfMeles % 2 == 0) {
-                this.money -= APPLE_PRICE * .5;
-            }
-        }
-        if (input.toLowerCase().contains("pomme")) {
-            this.numberOfPommes++;
-            this.money += APPLE_PRICE;
-            if (numberOfPommes % 3 == 0) {
-                this.money -= APPLE_PRICE;
-            }
-        }
-        if (input.toLowerCase().contains("banana")) {
-            this.numberOfBanana++;
-            this.money += BANANA_PRICE;
-            if (numberOfBanana % 2 == 0) {
-                this.money -= BANANA_PRICE;
-            }
-        }
-        if (input.toLowerCase().contains("cherry")) {
-            this.numberOfCherry++;
-            this.money += CHERRY_PRICE;
-            if (numberOfCherry % 2 == 0) {
-                this.money -= 20;
-            }
-        }
-        if ((numberOfPommeFamily() > 0 ) && (numberOfPommeFamily() % 4 == 0)) {
-            this.money -= 100;
-        }
-        if (numberOfProducts() % 5 == 0) {
-            this.money -= 200;
+        if (eligibleForProductDiscount()) {
+            this.money -= PRODUCT_DISCOUNT;
         }
     }
 
-    public int numberOfProducts() {
-        return numberOfPommeFamily() + numberOfBanana + numberOfCherry;
+    private boolean isElligibleForPommeFamilyDiscount(FRUIT fruit) {
+        return fruit.pommeFamily && (numberOfPommeFamily() > 0) && (numberOfPommeFamily() % 4 == 0);
     }
 
-    public int numberOfPommeFamily() {
-        return this.numberOfMeles + this.numberOfPommes + this.numberOfApples;
+    private boolean eligibleForProductDiscount() {
+        return numberOfProducts() % TRESHOLD_FOR_PRODUCT_DISCOUNT == 0;
+    }
+
+    public long numberOfProducts() {
+//        the jdk 8 way, don't rofl
+//        return fruitCounter.asMap().values().stream().reduce((x,y) -> x + y).get();
+        return fruitCounter.sum();
+    }
+
+    public long numberOfPommeFamily() {
+        //        the jdk 8 way, don't rofl
+        //        return fruitCounter.asMap().entrySet().stream().filter((e) -> e.getKey().pommeFamily).mapToLong((e) -> e.getValue()).sum();
+
+        return Maps.filterEntries(fruitCounter.asMap(), (e) -> e.getKey().pommeFamily).values().stream().reduce( (x,y) -> x+y).get();
     }
 
     public static void main(String[] args) {
