@@ -27,16 +27,16 @@ public class CashRegisterAcceptanceTest {
         cash("Cerise");
         cash("banane");
         cash("pomme");
-        hasMoney(280); // was 500 at start, with cherry and product discount it changes
+        hasMoney(280); // was 500 at start, with cherry and product discount it changes to 280
     }
 
     @Test
     public void step6() {
-        cash("Mele, Pommes, Pommes, Mele");
+        cash("Mele, Apple, Apple, Mele");
         hasMoney(250);
         cash("Banane");
         hasMoney(200);
-        cash("Mele, Pommes, Pommes, Apple, Mele");
+        cash("Mele, Pomme, Pomme, Apple, Mele");
         hasMoney(350);
     }
 
