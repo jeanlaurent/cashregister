@@ -1,4 +1,3 @@
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicLongMap;
 
 import java.util.Scanner;
@@ -38,7 +37,7 @@ public class CashRegister {
     public void registerOne(String input) {
         FRUIT fruit = FRUIT.valueOf(input.trim().toUpperCase());
 
-        this.money += fruit.priceWithEventualDiscount(fruitCounter.incrementAndGet(fruit));
+        this.money += fruit.discountedPrice(fruitCounter.incrementAndGet(fruit));
 
         if (isElligibleForPommeFamilyDiscount(fruit)) {
             this.money -= POMMEFAMILY_DISCOUNT;
@@ -63,10 +62,9 @@ public class CashRegister {
     }
 
     public long numberOfPommeFamily() {
-        //        the jdk 8 way, don't rofl
-        //        return fruitCounter.asMap().entrySet().stream().filter((e) -> e.getKey().pommeFamily).mapToLong((e) -> e.getValue()).sum();
-
-        return Maps.filterEntries(fruitCounter.asMap(), (e) -> e.getKey().pommeFamily).values().stream().reduce( (x,y) -> x+y).get();
+        //        the guava plus jdk 8 way, don't rofl
+//        return Maps.filterEntries(fruitCounter.asMap(), (e) -> e.getKey().pommeFamily).values().stream().reduce((x, y) -> x + y).get();
+        return fruitCounter.asMap().entrySet().stream().filter((e) -> e.getKey().pommeFamily).mapToLong((e) -> e.getValue()).sum();
     }
 
     public static void main(String[] args) {

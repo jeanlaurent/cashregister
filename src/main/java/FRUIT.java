@@ -1,5 +1,9 @@
 public enum FRUIT {
-    POMME(100, 100, -1, true), APPLE(100, 100, 3, true), MELE(100, 50, 2,true), BANANE(150, 150, 2,false), CERISE(75, 20, 2,false);
+    POMME  (100, 100, -1, true),
+    APPLE  (100, 100,  3, true),
+    MELE   (100,  50,  2, true),
+    BANANE (150, 150,  2, false),
+    CERISE ( 75,  20,  2, false);
 
     public final long price;
     public final long discount;
@@ -13,7 +17,7 @@ public enum FRUIT {
         this.pommeFamily = pommeFamily;
     }
 
-    public long priceWithEventualDiscount(long numberOfFruit) {
+    public long discountedPrice(long numberOfFruit) {
         long price = this.price;
         if (this.discountTreshold > 0 && numberOfFruit % this.discountTreshold == 0) {
             price -= this.discount;
